@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasta Cooking Instructions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #666;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .next {
+            background-color: #3498db;
+            color: white;
+        }
+        .prev {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .query {
+            background-color: #2ecc71;
+            color: white;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pasta Cooking Instructions</h1>
+        <p id="instruction"></p>
+        <p id="explanation"></p>
+        <p id="safety_reminder"></p>
+        <img id="step_image" src="" alt="Step Image">
+        <div class="buttons">
+            <button class="start" onclick="startInstructions()">Start</button>
+            <button class="prev" onclick="prevStep()" style="display:none;">Previous</button>
+            <button class="next" onclick="nextStep()" style="display:none;">Next</button>
+            <button class="query" onclick="handleQuery()" style="display:none;">Ask a Question</button>
+        </div>
+    </div>
+
+    <script>
+        let instructions = [];
+        let currentStep = 0;
+        let behaviorTypes = ['transparent_proactive', 'transparent_reactive', 'non_transparent_proactive', 'non_transparent_reactive'];
+        let currentBehavior = '';
+
+        // Fetch the JSON data
+        fetch('/static/steps_config_updated.json')
+            .then(response => response.json())
+            .then(data => {
+                instructions = data.steps;
+                // Randomly select a behavior type for the participant
+                currentBehavior = behaviorTypes[Math.floor(Math.random() * behaviorTypes.length)];
+                console.log('Assigned behavior type:', currentBehavior);
+            })
+            .catch(error => console.error('Error fetching JSON:', error));
+
+        function startInstructions() {
+            document.querySelector('.start').style.display = 'none';
+            document.querySelector('.prev').style.display = 'inline-block';
+            document.querySelector('.next').style.display = 'inline-block';
+            document.querySelector('.query').style.display = 'inline-block';
+            updateInstruction();  // Display the first step immediately
+        }
+
+        function updateInstruction() {
+            if (instructions.length > 0) {
+                const step = instructions[currentStep];
+                document.getElementById("instruction").innerHTML = `<span class="highlight">Step ${step.id}:</span> ${step.instruction}`;
+                document.getElementById("explanation").innerHTML = `<span class="highlight">Explanation:</span> ${step.explanation}`;
+                document.getElementById("safety_reminder").innerHTML = `<span class="highlight">Safety Reminder:</span> ${step.safety_reminder}`;
+                const stepImage = document.getElementById("step_image");
+                stepImage.src = `/static/${step.image}`;
+                stepImage.style.display = 'block';
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < instructions.length - 1) {
+                currentStep++;
+                updateInstruction();
+                sendCommand("next", currentStep + 1);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateInstruction();
+                sendCommand("prev", currentStep + 1);
+            }
+        }
+
+        function handleQuery() {
+            const query = prompt("What would you like to know?");
+            if (query) {
+                sendCommand(query, currentStep + 1);
+            }
+        }
+
+        function sendCommand(command, stepId) {
+            fetch('/send_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    command: command,
+                    step_id: stepId,
+                    behavior: currentBehavior
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Command sent successfully');
+                } else {
+                    console.log('Failed to send command');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

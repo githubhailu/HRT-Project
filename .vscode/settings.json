@@ -1,0 +1,7 @@
+{
+    "ros.distro": "noetic",
+    "python.analysis.extraPaths": [
+        "./pynaoqi-python27/lib"
+    ],
+    "Codegeex.CommitMessage.LanguagePreference": "English"
+}
