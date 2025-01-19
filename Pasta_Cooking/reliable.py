@@ -22,8 +22,8 @@ except Exception as e:
     print("Error connecting to Pepper: " + str(e))
     sys.exit(1)
 
-
-tablet_service.showWebview("/home/nao/HRT-Project/Pasta_Cooking/template/pepper_tablet_ui.html")
+ 
+tablet_service.showWebview("/home/nao/HRT/Pasta_Cooking/template/pepper_tablet_ui.html")
 # Configure logging
 logging.basicConfig(filename='Pasta_Cooking/logs/interaction_log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 

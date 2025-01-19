@@ -1,3 +1,0 @@
-reliability : 4
-proactivity : 4
-transparency : 4
